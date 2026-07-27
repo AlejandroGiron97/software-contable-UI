@@ -1,0 +1,118 @@
+.items-table-wrap { overflow-x: auto; }
+
+.items-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .875rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+thead th {
+  padding: .6rem .75rem; text-align: left;
+  background: #f8fafc; color: #64748b;
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+th.th-n      { width: 36px; text-align: center; }
+th.th-fecha  { width: 130px; }
+th.th-tipo   { width: 145px; }
+th.th-monto  { width: 160px; text-align: right; }
+th.th-estado { width: 140px; }
+th.th-apto   { width: 110px; }
+th.th-del    { width: 40px; }
+
+tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+tbody tr:hover { background: #f8fafc; }
+tr.tr-ingreso { background: rgba(22,163,74,.04); }
+tr.tr-egreso  { background: rgba(220,38,38,.03); }
+tr.tr-ahorro  { background: rgba(37,99,235,.04); }
+tr.tr-ingreso:hover { background: rgba(22,163,74,.08); }
+tr.tr-egreso:hover  { background: rgba(220,38,38,.07); }
+tr.tr-ahorro:hover  { background: rgba(37,99,235,.07); }
+
+.td-n { text-align: center; color: #94a3b8; font-size: .78rem; padding: .5rem .4rem; }
+td { padding: .35rem .5rem; vertical-align: middle; }
+
+.tr-empty td { padding: 2rem; text-align: center; }
+.empty-hint {
+  color: #94a3b8; font-size: .82rem;
+  background: #f8fafc; border-radius: 8px; padding: 1rem;
+  border: 1.5px dashed #e2e8f0;
+}
+
+/* Inputs inside table */
+.cell-txt {
+  width: 100%; border: 1.5px solid transparent;
+  border-radius: 6px; padding: .35rem .5rem;
+  font-size: .875rem; color: #0f172a; background: transparent;
+  outline: none; transition: border-color .15s, background .15s;
+}
+.cell-txt:hover { background: white; border-color: #e2e8f0; }
+.cell-txt:focus { background: white; border-color: #2563eb; }
+.cell-txt.nueva { background: white; border-color: #e2e8f0; }
+.cell-txt.nueva:focus { border-color: #2563eb; }
+
+.cell-date {
+  width: 100%; border: 1.5px solid transparent;
+  border-radius: 6px; padding: .3rem .4rem;
+  font-size: .8rem; color: #0f172a; background: transparent;
+  outline: none; transition: border-color .15s, background .15s;
+}
+.cell-date:hover { background: white; border-color: #e2e8f0; }
+.cell-date:focus { background: white; border-color: #2563eb; }
+.cell-date.nueva { background: white; border-color: #e2e8f0; }
+
+.cell-sel {
+  border: 1.5px solid transparent; border-radius: 6px;
+  padding: .35rem .5rem; font-size: .82rem; font-weight: 600;
+  outline: none; cursor: pointer; transition: border-color .15s;
+  background: transparent; width: 100%;
+}
+.cell-sel:hover, .cell-sel:focus { border-color: #e2e8f0; background: white; }
+.sel-ingreso  { color: #15803d; }
+.sel-egreso   { color: #dc2626; }
+.sel-ahorro   { color: #2563eb; }
+.sel-pagado    { color: #15803d; }
+.sel-pendiente { color: #d97706; }
+.sel-empty     { color: #94a3b8; }
+.sel-apto-set  { color: #7c3aed; font-weight: 700; }
+
+.cell-num {
+  text-align: right; width: 100%;
+  border: 1.5px solid transparent; border-radius: 6px;
+  padding: .35rem .5rem; font-size: .875rem; font-weight: 600;
+  outline: none; transition: border-color .15s; background: transparent;
+  -moz-appearance: textfield;
+}
+.cell-num::-webkit-inner-spin-button,
+.cell-num::-webkit-outer-spin-button { -webkit-appearance: none; }
+.cell-num:hover { background: white; border-color: #e2e8f0; }
+.cell-num:focus { background: white; border-color: #2563eb; }
+.num-ingreso { color: #15803d; }
+.num-egreso  { color: #dc2626; }
+.num-ahorro  { color: #2563eb; }
+
+/* Buttons */
+.btn-del {
+  background: none; border: none; cursor: pointer;
+  color: #cbd5e1; padding: .3rem; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, background .15s;
+}
+.btn-del:hover { color: #dc2626; background: #fef2f2; }
+.btn-del svg { width: 16px; height: 16px; }
+
+.btn-add {
+  background: #2563eb; border: none; cursor: pointer;
+  color: white; padding: .3rem; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.btn-add:hover:not(:disabled) { background: #1d4ed8; }
+.btn-add:disabled { background: #e2e8f0; cursor: not-allowed; }
+.btn-add svg { width: 16px; height: 16px; }
+
+/* Footer row */
+tfoot tr { background: #f8fafc; border-top: 2px solid #e2e8f0; }
+tfoot td { padding: .4rem .5rem; }

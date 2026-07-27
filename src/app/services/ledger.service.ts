@@ -1,96 +1,96 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Periodo, ItemPeriodo, AlertaCod } from '../models/periodo.model';
+import { Period, PeriodItem, AlertCode } from '../models/period.model';
 
 @Injectable({ providedIn: 'root' })
 export class LedgerService {
-  readonly periodos = signal<Periodo[]>([]);
+  readonly periods = signal<Period[]>([]);
 
-  readonly totalIngresos = computed(() =>
-    this.periodos().reduce((s, p) => s + p.ingresos, 0)
+  readonly totalIncome = computed(() =>
+    this.periods().reduce((s, p) => s + p.income, 0)
   );
-  readonly totalEgresos = computed(() =>
-    this.periodos().reduce((s, p) => s + p.egresos, 0)
+  readonly totalExpenses = computed(() =>
+    this.periods().reduce((s, p) => s + p.expenses, 0)
   );
-  readonly totalAhorro = computed(() =>
-    this.periodos().reduce((s, p) => s + p.ahorro, 0)
+  readonly totalSavings = computed(() =>
+    this.periods().reduce((s, p) => s + p.savings, 0)
   );
-  readonly cajaFinal = computed(() =>
-    this.periodos().reduce((s, p) => s + p.caja, 0)
+  readonly finalCash = computed(() =>
+    this.periods().reduce((s, p) => s + p.cash, 0)
   );
-  readonly endeudamientoGeneral = computed(() =>
-    this.totalIngresos() > 0 ? (this.totalEgresos() / this.totalIngresos()) * 100 : 0
+  readonly overallDebtRatio = computed(() =>
+    this.totalIncome() > 0 ? (this.totalExpenses() / this.totalIncome()) * 100 : 0
   );
-  readonly alertaGeneral = computed<AlertaCod>(() =>
-    this.calcularAlerta(this.totalEgresos(), this.totalIngresos(), this.cajaFinal())
+  readonly overallAlert = computed<AlertCode>(() =>
+    this.calculateAlert(this.totalExpenses(), this.totalIncome(), this.finalCash())
   );
 
-  calcularAlerta(egresos: number, ingresos: number, caja: number): AlertaCod {
-    const ratio = ingresos > 0 ? egresos / ingresos : 1;
-    if (caja < 0 || ratio > 0.9) return 3;
-    if (ratio > 0.7 || (ingresos > 0 && caja < ingresos * 0.05)) return 2;
+  calculateAlert(expenses: number, income: number, cash: number): AlertCode {
+    const ratio = income > 0 ? expenses / income : 1;
+    if (cash < 0 || ratio > 0.9) return 3;
+    if (ratio > 0.7 || (income > 0 && cash < income * 0.05)) return 2;
     return 1;
   }
 
-  private recalc(items: ItemPeriodo[]): Omit<Periodo, 'anio' | 'mes' | 'items'> {
-    const ingresos = items
-      .filter(i => i.tipo === 'ingreso')
-      .reduce((s, i) => s + i.monto, 0);
-    const egresos = items
-      .filter(i => i.tipo === 'egreso')
-      .reduce((s, i) => s + i.monto, 0);
-    const ahorro = items
-      .filter(i => i.tipo === 'ahorro')
-      .reduce((s, i) => s + i.monto, 0);
-    const caja = ingresos - egresos - ahorro;
-    const endeudamiento = ingresos > 0 ? (egresos / ingresos) * 100 : 0;
-    const alerta = this.calcularAlerta(egresos, ingresos, caja);
-    return { ingresos, egresos, ahorro, caja, alerta, endeudamiento };
+  private recalculate(items: PeriodItem[]): Omit<Period, 'year' | 'month' | 'items'> {
+    const income = items
+      .filter(i => i.type === 'ingreso')
+      .reduce((s, i) => s + i.amount, 0);
+    const expenses = items
+      .filter(i => i.type === 'egreso')
+      .reduce((s, i) => s + i.amount, 0);
+    const savings = items
+      .filter(i => i.type === 'ahorro')
+      .reduce((s, i) => s + i.amount, 0);
+    const cash = income - expenses - savings;
+    const debtRatio = income > 0 ? (expenses / income) * 100 : 0;
+    const alert = this.calculateAlert(expenses, income, cash);
+    return { income, expenses, savings, cash, alert, debtRatio };
   }
 
-  agregarMes(anio: number, mes: string): boolean {
-    if (this.getPeriodo(anio, mes)) return false;
-    const items: ItemPeriodo[] = [];
-    this.periodos.update(ps => [
+  addMonth(year: number, month: string): boolean {
+    if (this.getPeriod(year, month)) return false;
+    const items: PeriodItem[] = [];
+    this.periods.update(ps => [
       ...ps,
-      { anio, mes, items, ...this.recalc(items) },
+      { year, month, items, ...this.recalculate(items) },
     ]);
     return true;
   }
 
-  actualizarItems(anio: number, mes: string, items: ItemPeriodo[]): void {
-    const totales = this.recalc(items);
-    this.periodos.update(ps =>
+  updateItems(year: number, month: string, items: PeriodItem[]): void {
+    const totals = this.recalculate(items);
+    this.periods.update(ps =>
       ps.map(p =>
-        p.anio === anio && p.mes === mes
-          ? { ...p, items: [...items], ...totales }
+        p.year === year && p.month === month
+          ? { ...p, items: [...items], ...totals }
           : p
       )
     );
   }
 
-  actualizarNota(anio: number, mes: string, nota: string): void {
-    this.periodos.update(ps =>
+  updateNote(year: number, month: string, note: string): void {
+    this.periods.update(ps =>
       ps.map(p =>
-        p.anio === anio && p.mes === mes ? { ...p, nota } : p
+        p.year === year && p.month === month ? { ...p, note } : p
       )
     );
   }
 
-  eliminarMes(anio: number, mes: string): void {
-    this.periodos.update(ps =>
-      ps.filter(p => !(p.anio === anio && p.mes === mes))
+  removeMonth(year: number, month: string): void {
+    this.periods.update(ps =>
+      ps.filter(p => !(p.year === year && p.month === month))
     );
   }
 
-  getPeriodo(anio: number, mes: string): Periodo | undefined {
-    return this.periodos().find(p => p.anio === anio && p.mes === mes);
+  getPeriod(year: number, month: string): Period | undefined {
+    return this.periods().find(p => p.year === year && p.month === month);
   }
 
-  cargarPeriodos(periodos: Periodo[]): void {
-    this.periodos.set(periodos);
+  loadPeriods(periods: Period[]): void {
+    this.periods.set(periods);
   }
 
-  generarId(): string {
+  generateId(): string {
     return Math.random().toString(36).slice(2, 10);
   }
 }

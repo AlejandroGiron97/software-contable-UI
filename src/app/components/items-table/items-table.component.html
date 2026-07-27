@@ -1,0 +1,195 @@
+<div class="items-table-wrap">
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="th-n">#</th>
+        <th class="th-fecha">Fecha</th>
+        <th class="th-concepto">Concepto / Descripción</th>
+        <th class="th-tipo">Tipo</th>
+        <th class="th-monto">Monto (COP $)</th>
+        <th class="th-estado">Estado</th>
+        <th class="th-apto">Apto</th>
+        <th class="th-del"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @if (items.length === 0) {
+        <tr class="tr-empty">
+          <td colspan="8">
+            <div class="empty-hint">
+              Usa la fila de abajo para agregar el primer concepto de este mes
+            </div>
+          </td>
+        </tr>
+      }
+      @for (item of items; track item.id; let i = $index) {
+        <tr [class]="'tr-item tr-' + item.type">
+          <td class="td-n">{{ i + 1 }}</td>
+          <td class="td-fecha">
+            <input
+              type="date"
+              [(ngModel)]="item.date"
+              (blur)="save()"
+              (change)="save()"
+              class="cell-date"
+            />
+          </td>
+          <td class="td-concepto">
+            <input
+              type="text"
+              [(ngModel)]="item.concept"
+              (blur)="save()"
+              (change)="save()"
+              placeholder="Ej: Arriendo, Salario, Netflix..."
+              list="conceptos-dl"
+              class="cell-txt"
+            />
+          </td>
+          <td class="td-tipo">
+            <select
+              [(ngModel)]="item.type"
+              (change)="save()"
+              class="cell-sel"
+              [class]="'sel-' + item.type"
+            >
+              <option value="ingreso">🟢 Ingreso</option>
+              <option value="egreso">🔴 Egreso</option>
+              <option value="ahorro">🔵 Ahorro</option>
+            </select>
+          </td>
+          <td class="td-monto">
+            <input
+              type="number"
+              [(ngModel)]="item.amount"
+              (blur)="save()"
+              min="0"
+              class="cell-num"
+              [class]="'num-' + item.type"
+            />
+          </td>
+          <td class="td-estado">
+            <select
+              [(ngModel)]="item.status"
+              (change)="save()"
+              class="cell-sel"
+              [ngClass]="statusClass(item.status)"
+            >
+              <option value="">— Estado —</option>
+              <option value="pagado">✅ Ya se pagó</option>
+              <option value="pendiente">⏳ Pendiente</option>
+            </select>
+          </td>
+          <td class="td-apto">
+            <select
+              [(ngModel)]="item.unit"
+              (change)="save()"
+              class="cell-sel"
+              [class.sel-apto-set]="!!item.unit"
+            >
+              <option value="">— Apto —</option>
+              @for (u of units; track u) {
+                <option [value]="u">{{ u }}</option>
+              }
+              <option value="otros">Otros</option>
+            </select>
+          </td>
+          <td class="td-del">
+            <button class="btn-del" (click)="remove(i)" title="Eliminar fila">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+
+    <!-- NUEVA FILA -->
+    <tfoot>
+      <tr class="tr-nueva">
+        <td class="td-n">+</td>
+        <td class="td-fecha">
+          <input
+            type="date"
+            [(ngModel)]="draft.date"
+            class="cell-date nueva"
+          />
+        </td>
+        <td class="td-concepto">
+          <input
+            type="text"
+            [(ngModel)]="draft.concept"
+            placeholder="Concepto nuevo..."
+            list="conceptos-dl"
+            class="cell-txt nueva"
+            (keydown.enter)="add()"
+            #conceptoInput
+          />
+        </td>
+        <td class="td-tipo">
+          <select [(ngModel)]="draft.type" class="cell-sel" [class]="'sel-' + draft.type">
+            <option value="ingreso">🟢 Ingreso</option>
+            <option value="egreso">🔴 Egreso</option>
+            <option value="ahorro">🔵 Ahorro</option>
+          </select>
+        </td>
+        <td class="td-monto">
+          <input
+            type="number"
+            [(ngModel)]="draft.amount"
+            placeholder="0"
+            min="0"
+            class="cell-num"
+            (keydown.enter)="add()"
+          />
+        </td>
+        <td class="td-estado">
+          <select
+            [(ngModel)]="draft.status"
+            class="cell-sel"
+            [ngClass]="statusClass(draft.status)"
+          >
+            <option value="">— Estado —</option>
+            <option value="pagado">✅ Ya se pagó</option>
+            <option value="pendiente">⏳ Pendiente</option>
+          </select>
+        </td>
+        <td class="td-apto">
+          <select
+            [(ngModel)]="draft.unit"
+            class="cell-sel"
+            [class.sel-apto-set]="!!draft.unit"
+          >
+            <option value="">— Apto —</option>
+            @for (u of units; track u) {
+              <option [value]="u">{{ u }}</option>
+            }
+            <option value="otros">Otros</option>
+          </select>
+        </td>
+        <td class="td-del">
+          <button
+            class="btn-add"
+            (click)="add()"
+            [disabled]="!isDraftValid"
+            title="Agregar línea (Enter)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <datalist id="conceptos-dl">
+    @for (c of suggestedConcepts; track c) {
+      <option [value]="c"></option>
+    }
+  </datalist>
+
+</div>

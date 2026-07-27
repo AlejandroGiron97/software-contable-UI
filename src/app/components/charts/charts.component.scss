@@ -1,0 +1,26 @@
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+.chart-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+.chart-title {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .75rem; flex-wrap: wrap; gap: .5rem;
+}
+.chart-title > span { font-size: .875rem; font-weight: 700; color: #0f172a; }
+.legend { display: flex; gap: .75rem; }
+.leg-item { display: flex; align-items: center; gap: .3rem; font-size: .75rem; color: #64748b; }
+.leg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.svg-chart { width: 100%; display: block; }
+.axis-txt { font-size: 9px; fill: #94a3b8; font-family: -apple-system, sans-serif; }
+.zero-lbl { fill: #64748b; font-weight: 600; }
+.area-fill { fill: rgba(37,99,235,.07); }

@@ -1,4 +1,5 @@
 import { AlertCode } from '../../models/period.model';
+import { DEBT_RATIO_WARNING_PCT, DEBT_RATIO_CRITICAL_PCT } from '../../models/alert-thresholds.const';
 
 export function alertDotClass(code: AlertCode): string {
   return `d-${code}`;
@@ -13,5 +14,5 @@ export function alertLabel(code: AlertCode): string {
 }
 
 export function debtRatioClass(percentage: number): string {
-  return percentage > 90 ? 't-red' : percentage > 70 ? 't-warn' : 't-green';
+  return percentage > DEBT_RATIO_CRITICAL_PCT ? 't-red' : percentage > DEBT_RATIO_WARNING_PCT ? 't-warn' : 't-green';
 }

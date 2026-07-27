@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Period, PeriodItem, AlertCode } from '../models/period.model';
+import { DEBT_RATIO_WARNING_PCT, DEBT_RATIO_CRITICAL_PCT, LOW_CASH_BUFFER_RATIO } from '../models/alert-thresholds.const';
 
 @Injectable({ providedIn: 'root' })
 export class LedgerService {
@@ -26,12 +27,12 @@ export class LedgerService {
 
   calculateAlert(expenses: number, income: number, cash: number): AlertCode {
     const ratio = income > 0 ? expenses / income : 1;
-    if (cash < 0 || ratio > 0.9) return 3;
-    if (ratio > 0.7 || (income > 0 && cash < income * 0.05)) return 2;
+    if (cash < 0 || ratio > DEBT_RATIO_CRITICAL_PCT / 100) return 3;
+    if (ratio > DEBT_RATIO_WARNING_PCT / 100 || (income > 0 && cash < income * LOW_CASH_BUFFER_RATIO)) return 2;
     return 1;
   }
 
-  private recalculate(items: PeriodItem[]): Omit<Period, 'year' | 'month' | 'items'> {
+  computeTotals(items: PeriodItem[]): Omit<Period, 'year' | 'month' | 'items'> {
     const income = items
       .filter(i => i.type === 'ingreso')
       .reduce((s, i) => s + i.amount, 0);
@@ -52,13 +53,13 @@ export class LedgerService {
     const items: PeriodItem[] = [];
     this.periods.update(ps => [
       ...ps,
-      { year, month, items, ...this.recalculate(items) },
+      { year, month, items, ...this.computeTotals(items) },
     ]);
     return true;
   }
 
   updateItems(year: number, month: string, items: PeriodItem[]): void {
-    const totals = this.recalculate(items);
+    const totals = this.computeTotals(items);
     this.periods.update(ps =>
       ps.map(p =>
         p.year === year && p.month === month

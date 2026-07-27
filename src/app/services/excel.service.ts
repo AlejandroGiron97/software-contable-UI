@@ -125,13 +125,7 @@ export class ExcelService {
 
     const periods: Period[] = [];
     periodMap.forEach(({ year, month, items }) => {
-      const income = items.filter(i => i.type === 'ingreso').reduce((s, i) => s + i.amount, 0);
-      const expenses = items.filter(i => i.type === 'egreso').reduce((s, i) => s + i.amount, 0);
-      const savings = items.filter(i => i.type === 'ahorro').reduce((s, i) => s + i.amount, 0);
-      const cash = income - expenses - savings;
-      const debtRatio = income > 0 ? (expenses / income) * 100 : 0;
-      const alert = this.ledger.calculateAlert(expenses, income, cash);
-      const period: Period = { year, month, items, income, expenses, savings, cash, alert, debtRatio };
+      const period: Period = { year, month, items, ...this.ledger.computeTotals(items) };
       const note = notesMap.get(`${year}|${month}`);
       if (note) period.note = note;
       periods.push(period);

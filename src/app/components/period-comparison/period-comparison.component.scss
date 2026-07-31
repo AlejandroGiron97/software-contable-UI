@@ -1,0 +1,21 @@
+.comparison-card {
+  background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: .75rem 1.125rem; margin-bottom: 1rem;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.comparison-neutral { color: #94a3b8; font-size: .85rem; text-align: center; padding: 1rem; }
+.comparison-header {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.comparison-warn {
+  background: #fef3c7; color: #b45309; font-size: .65rem; font-weight: 700;
+  padding: .1rem .5rem; border-radius: 20px; text-transform: none; letter-spacing: normal;
+}
+.comparison-metrics { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.comparison-metric { display: flex; flex-direction: column; gap: .1rem; }
+.cm-label { font-size: .68rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; }
+.cm-value { font-size: .95rem; font-weight: 800; color: #475569; }
+.comparison-metric.good .cm-value { color: #15803d; }
+.comparison-metric.bad .cm-value { color: #dc2626; }

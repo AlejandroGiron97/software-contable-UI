@@ -1,0 +1,125 @@
+@if (!campaign) {
+  <div class="detail-page">
+    <div class="empty-state">
+      <p>Esta campaña no existe o fue eliminada.</p>
+      <button class="btn-back" (click)="goBack()">&larr; Volver a Cuotas Extraordinarias</button>
+    </div>
+  </div>
+} @else {
+  <div class="detail-page">
+
+    <div class="detail-header">
+      <button class="btn-back" (click)="goBack()" title="Volver">&larr;</button>
+      <h2>{{ campaign.name }}</h2>
+      <button class="btn-del" (click)="removeCampaign()" title="Eliminar campaña">🗑</button>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" [style.width.%]="progressPct"></div>
+      </div>
+      <span class="progress-label">{{ progressPct.toFixed(0) }}% de la meta ({{ formatCurrency(campaign.goal) }})</span>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <span class="kpi-lbl">Recaudado</span>
+        <span class="kpi-val k-green">{{ formatCurrency(totals.collected) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-lbl">Retirado</span>
+        <span class="kpi-val k-red">{{ formatCurrency(totals.withdrawn) }}</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-lbl">Disponible</span>
+        <span class="kpi-val" [class.k-green]="totals.available >= 0" [class.k-red]="totals.available < 0">
+          {{ formatCurrency(totals.available) }}
+        </span>
+      </div>
+    </div>
+
+    @if (monthlyTotals.length) {
+      <div class="table-card">
+        <h3>Recaudado por mes</h3>
+        <div class="monthly-grid">
+          @for (m of monthlyTotals; track m.key) {
+            <div class="monthly-item">
+              <span class="monthly-lbl">{{ m.label }}</span>
+              <span class="monthly-val">{{ formatCurrency(m.amount) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (linkedExpenses.length) {
+      <div class="table-card linked-card">
+        <h3>Egresos financiados con esta cuota</h3>
+        <p class="hint-text">
+          Estos egresos ya se registraron en el mes correspondiente y no afectan la caja de ese mes.
+          Si eliminas o modificas un retiro arriba, revisa que esta lista siga siendo correcta.
+        </p>
+        @if (linkedExpensesTotal !== totals.withdrawn) {
+          <p class="mismatch-warn">
+            Atención: has retirado {{ formatCurrency(totals.withdrawn) }} de esta cuota, pero los egresos
+            marcados como financiados por ella suman {{ formatCurrency(linkedExpensesTotal) }}.
+            Revisa si falta registrar o corregir algún movimiento.
+          </p>
+        }
+        <table class="linked-table">
+          <thead>
+            <tr><th>Mes</th><th>Fecha</th><th>Concepto</th><th>Monto</th></tr>
+          </thead>
+          <tbody>
+            @for (e of linkedExpenses; track $index) {
+              <tr>
+                <td>{{ e.month }} {{ e.year }}</td>
+                <td>{{ e.date || '—' }}</td>
+                <td>{{ e.concept }}</td>
+                <td class="amount">{{ formatCurrency(e.amount) }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3">Total</td><td class="amount">{{ formatCurrency(linkedExpensesTotal) }}</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    }
+
+    <div class="tables-grid">
+      <div class="table-card">
+        <h3>Aportes por apartamento</h3>
+        <app-contribution-table
+          [rows]="campaign.contributions"
+          kind="aporte"
+          [showUnit]="true"
+          (rowsChange)="onContributionsChange($event)"
+        />
+      </div>
+      <div class="table-card">
+        <h3>Retiros</h3>
+        <app-contribution-table
+          [rows]="campaign.withdrawals"
+          kind="retiro"
+          [showUnit]="false"
+          (rowsChange)="onWithdrawalsChange($event)"
+        />
+      </div>
+    </div>
+
+    <app-evolution-chart [points]="timeline" color="#d97706" />
+
+    <div class="nota-card">
+      <div class="nota-header"><span>Nota de la campaña</span></div>
+      <textarea
+        class="nota-txt"
+        placeholder="Notas de esta campaña..."
+        [value]="campaign.note ?? ''"
+        (input)="onNoteChange($event)"
+        rows="3"
+      ></textarea>
+    </div>
+
+  </div>
+}

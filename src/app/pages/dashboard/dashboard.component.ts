@@ -1,47 +1,43 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { LedgerService } from '../../services/ledger.service';
-import { ExcelService } from '../../services/excel.service';
 import { PdfReportService } from '../../services/pdf-report.service';
+import { FundsService } from '../../services/funds.service';
 import { ItemsTableComponent } from '../../components/items-table/items-table.component';
 import { ChartsComponent } from '../../components/charts/charts.component';
+import { PeriodComparisonComponent } from '../../components/period-comparison/period-comparison.component';
 import { Period } from '../../models/period.model';
 import { formatCurrency, formatCurrencyShort } from '../../core/utils/currency-formatter.util';
-import { alertDotClass, alertBadgeClass, alertLabel, debtRatioClass } from '../../shared/alert/alert-status.util';
-
-const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
+import { alertDotClass } from '../../shared/alert/alert-status.util';
+import { MONTHS } from '../../core/utils/period-order.util';
+import { sumContributionsForPeriod } from '../../core/utils/fund-period-match.util';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, ItemsTableComponent, ChartsComponent],
+  imports: [FormsModule, ItemsTableComponent, ChartsComponent, PeriodComparisonComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
   readonly ledger = inject(LedgerService);
-  private excelService = inject(ExcelService);
   private pdfReportService = inject(PdfReportService);
-  private router = inject(Router);
+  private funds = inject(FundsService);
 
   readonly months = MONTHS;
-  readonly Math = Math;
 
   readonly formatCurrency = formatCurrency;
   readonly formatCurrencyShort = formatCurrencyShort;
   readonly alertDotClass = alertDotClass;
-  readonly alertBadgeClass = alertBadgeClass;
-  readonly alertLabel = alertLabel;
-  readonly debtRatioClass = debtRatioClass;
 
   selectedKey = signal<string>('');
   newYear = new Date().getFullYear();
   newMonth = 'Enero';
-  importError = '';
+
+  constructor() {
+    const ps = this.ledger.periods();
+    if (ps.length) this.selectedKey.set(this.keyOf(ps[0]));
+  }
 
   get currentPeriod(): Period | null {
     const key = this.selectedKey();
@@ -97,8 +93,18 @@ export class DashboardComponent {
     if (idx < ps.length - 1) this.selectedKey.set(this.keyOf(ps[idx + 1]));
   }
 
-  downloadExcel(): void { this.excelService.export(this.ledger.periods()); }
-  downloadPdf(): void { this.pdfReportService.export(this.ledger.periods()); }
+  get monthSavingsContributed(): number {
+    if (!this.currentPeriod) return 0;
+    return sumContributionsForPeriod(this.funds.savingsFund().contributions, this.currentPeriod.year, this.currentPeriod.month);
+  }
+
+  get monthExtraFeeCollected(): number {
+    if (!this.currentPeriod) return 0;
+    const { year, month } = this.currentPeriod;
+    return this.funds.extraFeeCampaigns()
+      .reduce((sum, c) => sum + sumContributionsForPeriod(c.contributions, year, month), 0);
+  }
+
   downloadPdfForMonth(): void { if (this.currentPeriod) this.pdfReportService.exportMonth(this.currentPeriod); }
 
   onNoteChange(event: Event): void {
@@ -106,19 +112,4 @@ export class DashboardComponent {
     const note = (event.target as HTMLTextAreaElement).value;
     this.ledger.updateNote(this.currentPeriod.year, this.currentPeriod.month, note);
   }
-
-  async import(event: Event): Promise<void> {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.importError = '';
-    try {
-      await this.excelService.import(file);
-      const ps = this.ledger.periods();
-      if (ps.length) this.selectedKey.set(this.keyOf(ps[0]));
-    } catch (e: any) {
-      this.importError = typeof e === 'string' ? e : 'Error al importar.';
-    }
-  }
-
-  goHome(): void { this.router.navigate(['/']); }
 }

@@ -3,14 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { LedgerService } from '../../services/ledger.service';
 import { PeriodItem, ItemType } from '../../models/period.model';
-
-const UNITS: string[] = [
-  '101', '102', '103', '104',
-  '201', '202', '203', '204',
-  '301', '302', '303', '304',
-  '401', '402', '403', '404',
-  '501', '502', '503', '504',
-];
+import { UNITS } from '../../models/units.const';
+import { FinancingSelectComponent, FinancingValue } from '../financing-select/financing-select.component';
 
 const SUGGESTED_CONCEPTS = [
   'Pago Administracion',
@@ -21,12 +15,25 @@ const SUGGESTED_CONCEPTS = [
   'Pago Mantenimiento',
 ];
 
-type EditableItem = Omit<PeriodItem, 'status' | 'date' | 'unit'> & { date: string; status: string; unit: string };
+type EditableItem = Omit<PeriodItem, 'status' | 'date' | 'unit' | 'fundedBySource' | 'fundedByCampaignId'> & {
+  date: string;
+  status: string;
+  unit: string;
+  financing: FinancingValue;
+};
+
+function toFinancing(item: Pick<PeriodItem, 'fundedBySource' | 'fundedByCampaignId'>): FinancingValue {
+  if (item.fundedBySource === 'savings') return { source: 'savings' };
+  if (item.fundedBySource === 'extra-fee' && item.fundedByCampaignId) {
+    return { source: 'extra-fee', campaignId: item.fundedByCampaignId };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-items-table',
   standalone: true,
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, FinancingSelectComponent],
   templateUrl: './items-table.component.html',
   styleUrl: './items-table.component.scss',
 })
@@ -37,8 +44,8 @@ export class ItemsTableComponent implements OnChanges {
   private ledger = inject(LedgerService);
 
   items: EditableItem[] = [];
-  draft: { concept: string; type: ItemType; amount: number; date: string; status: string; unit: string } = {
-    concept: '', type: 'egreso', amount: 0, date: '', status: '', unit: '',
+  draft: { concept: string; type: ItemType; amount: number; date: string; status: string; unit: string; financing: FinancingValue } = {
+    concept: '', type: 'egreso', amount: 0, date: '', status: '', unit: '', financing: null,
   };
 
   readonly suggestedConcepts = SUGGESTED_CONCEPTS;
@@ -51,6 +58,7 @@ export class ItemsTableComponent implements OnChanges {
       date: i.date ?? '',
       status: i.status ?? '',
       unit: i.unit ?? '',
+      financing: toFinancing(i),
     }));
     this.sortByDate();
   }
@@ -72,6 +80,12 @@ export class ItemsTableComponent implements OnChanges {
       if (e.date) item.date = e.date;
       if (e.status === 'pagado' || e.status === 'pendiente') item.status = e.status;
       if (e.unit) item.unit = e.unit;
+      if (e.financing?.source === 'savings') {
+        item.fundedBySource = 'savings';
+      } else if (e.financing?.source === 'extra-fee') {
+        item.fundedBySource = 'extra-fee';
+        item.fundedByCampaignId = e.financing.campaignId;
+      }
       return item;
     });
     this.ledger.updateItems(this.year, this.month, items);
@@ -97,9 +111,15 @@ export class ItemsTableComponent implements OnChanges {
     if (this.draft.date) item.date = this.draft.date;
     if (this.draft.status === 'pagado' || this.draft.status === 'pendiente') item.status = this.draft.status;
     if (this.draft.unit) item.unit = this.draft.unit;
-    this.items = [...this.items, { ...item, date: item.date ?? '', status: item.status ?? '', unit: item.unit ?? '' }];
+    this.items = [...this.items, {
+      ...item,
+      date: item.date ?? '',
+      status: item.status ?? '',
+      unit: item.unit ?? '',
+      financing: this.draft.type === 'egreso' ? this.draft.financing : null,
+    }];
     this.save();
-    this.draft = { concept: '', type: this.draft.type, amount: 0, date: '', status: '', unit: '' };
+    this.draft = { concept: '', type: this.draft.type, amount: 0, date: '', status: '', unit: '', financing: null };
   }
 
   remove(index: number): void {

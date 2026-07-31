@@ -1,0 +1,98 @@
+<div class="savings-page">
+
+  <div class="page-header">
+    <h2>Ahorro</h2>
+    <span class="page-total" [class.pos]="totals().available >= 0" [class.neg]="totals().available < 0">
+      Saldo: {{ formatCurrency(totals().available) }}
+    </span>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <span class="kpi-lbl">Total Aportado</span>
+      <span class="kpi-val k-green">{{ formatCurrency(totals().collected) }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">Total Retirado</span>
+      <span class="kpi-val k-red">{{ formatCurrency(totals().withdrawn) }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">Saldo</span>
+      <span class="kpi-val" [class.k-green]="totals().available >= 0" [class.k-red]="totals().available < 0">
+        {{ formatCurrency(totals().available) }}
+      </span>
+    </div>
+  </div>
+
+  @if (linkedExpenses.length) {
+    <div class="table-card linked-card">
+      <h3>Egresos financiados con el ahorro</h3>
+      <p class="hint-text">
+        Estos egresos ya se registraron en el mes correspondiente y no afectan la caja de ese mes.
+        Si eliminas o modificas un retiro arriba, revisa que esta lista siga siendo correcta.
+      </p>
+      @if (linkedExpensesTotal !== totals().withdrawn) {
+        <p class="mismatch-warn">
+          Atención: has retirado {{ formatCurrency(totals().withdrawn) }} del ahorro, pero los egresos
+          marcados como financiados por él suman {{ formatCurrency(linkedExpensesTotal) }}.
+          Revisa si falta registrar o corregir algún movimiento.
+        </p>
+      }
+      <table class="linked-table">
+        <thead>
+          <tr><th>Mes</th><th>Fecha</th><th>Concepto</th><th>Monto</th></tr>
+        </thead>
+        <tbody>
+          @for (e of linkedExpenses; track $index) {
+            <tr>
+              <td>{{ e.month }} {{ e.year }}</td>
+              <td>{{ e.date || '—' }}</td>
+              <td>{{ e.concept }}</td>
+              <td class="amount">{{ formatCurrency(e.amount) }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3">Total</td><td class="amount">{{ formatCurrency(linkedExpensesTotal) }}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  }
+
+  <div class="tables-grid">
+    <div class="table-card">
+      <h3>Aportes</h3>
+      <app-contribution-table
+        [rows]="fund().contributions"
+        kind="aporte"
+        [showUnit]="false"
+        (rowsChange)="onContributionsChange($event)"
+      />
+    </div>
+    <div class="table-card">
+      <h3>Retiros</h3>
+      <app-contribution-table
+        [rows]="fund().withdrawals"
+        kind="retiro"
+        [showUnit]="false"
+        (rowsChange)="onWithdrawalsChange($event)"
+      />
+    </div>
+  </div>
+
+  <app-evolution-chart [points]="timeline" color="#2563eb" />
+
+  <div class="nota-card">
+    <div class="nota-header">
+      <span>Nota</span>
+    </div>
+    <textarea
+      class="nota-txt"
+      placeholder="Notas sobre el ahorro..."
+      [value]="fund().note ?? ''"
+      (input)="onNoteChange($event)"
+      rows="3"
+    ></textarea>
+  </div>
+
+</div>

@@ -10,6 +10,7 @@
         <th class="th-monto">Monto (COP $)</th>
         <th class="th-estado">Estado</th>
         <th class="th-apto">Apto</th>
+        <th class="th-fin">Fin.</th>
         <th class="th-del"></th>
       </tr>
     </thead>
@@ -17,7 +18,7 @@
     <tbody>
       @if (items.length === 0) {
         <tr class="tr-empty">
-          <td colspan="8">
+          <td colspan="9">
             <div class="empty-hint">
               Usa la fila de abajo para agregar el primer concepto de este mes
             </div>
@@ -56,7 +57,9 @@
             >
               <option value="ingreso">🟢 Ingreso</option>
               <option value="egreso">🔴 Egreso</option>
-              <option value="ahorro">🔵 Ahorro</option>
+              @if (item.type === 'ahorro') {
+                <option value="ahorro">🔵 Ahorro (histórico)</option>
+              }
             </select>
           </td>
           <td class="td-monto">
@@ -94,6 +97,13 @@
               }
               <option value="otros">Otros</option>
             </select>
+          </td>
+          <td class="td-fin">
+            <app-financing-select
+              [value]="item.financing"
+              (valueChange)="item.financing = $event; save()"
+              [disabled]="item.type !== 'egreso'"
+            />
           </td>
           <td class="td-del">
             <button class="btn-del" (click)="remove(i)" title="Eliminar fila">
@@ -133,7 +143,6 @@
           <select [(ngModel)]="draft.type" class="cell-sel" [class]="'sel-' + draft.type">
             <option value="ingreso">🟢 Ingreso</option>
             <option value="egreso">🔴 Egreso</option>
-            <option value="ahorro">🔵 Ahorro</option>
           </select>
         </td>
         <td class="td-monto">
@@ -169,6 +178,13 @@
             }
             <option value="otros">Otros</option>
           </select>
+        </td>
+        <td class="td-fin">
+          <app-financing-select
+            [value]="draft.financing"
+            (valueChange)="draft.financing = $event"
+            [disabled]="draft.type !== 'egreso'"
+          />
         </td>
         <td class="td-del">
           <button

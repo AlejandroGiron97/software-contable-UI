@@ -1,0 +1,34 @@
+<div class="extra-fees-page">
+
+  <div class="page-header">
+    <h2>Cuotas Extraordinarias</h2>
+  </div>
+
+  <div class="new-campaign-card">
+    <h3>Nueva campaña</h3>
+    <div class="new-row">
+      <input type="text" [(ngModel)]="newName" placeholder="Nombre (ej: Cambio de ascensor 2026)" class="inp-nombre" />
+      <input type="number" [(ngModel)]="newGoal" placeholder="Meta ($)" min="0" class="inp-meta" />
+      <button class="btn-create" (click)="createCampaign()" [disabled]="!isNewValid">+ Crear</button>
+    </div>
+  </div>
+
+  <div class="campaigns-grid">
+    @for (c of campaigns(); track c.id) {
+      <div class="campaign-card" (click)="open(c.id)">
+        <h3>{{ c.name }}</h3>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="progressPct(c.id)"></div>
+        </div>
+        <div class="campaign-stats">
+          <span>Meta: {{ formatCurrency(c.goal) }}</span>
+          <span>Recaudado: {{ formatCurrency(totalsFor(c.id).collected) }}</span>
+        </div>
+      </div>
+    }
+    @if (!campaigns().length) {
+      <p class="empty-hint">Aún no hay cuotas extraordinarias registradas. Crea la primera arriba.</p>
+    }
+  </div>
+
+</div>

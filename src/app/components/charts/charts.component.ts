@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { Period } from '../../models/period.model';
 import { formatCurrencyShort } from '../../core/utils/currency-formatter.util';
+import { makeTicks, Tick } from '../../core/utils/chart-ticks.util';
 
 interface BarRect {
   x: number; y: number; w: number; h: number; fill: string; key: string;
 }
-interface Tick { y: number; label: string; }
 interface XLabel { x: number; text: string; }
 interface CashPoint { x: number; y: number; alert: number; val: number; }
 
@@ -33,6 +33,7 @@ export class ChartsComponent {
 
   get chartW() { return this.W - this.PL - this.PR; }
   get chartH() { return this.H - this.PT - this.PB; }
+  private get geometry() { return { PT: this.PT, PB: this.PB, H: this.H, chartH: this.chartH }; }
 
   yTicks: Tick[] = [];
   cashTicks: Tick[] = [];
@@ -69,7 +70,7 @@ export class ChartsComponent {
 
     // Bar chart
     const maxValue = Math.max(...ps.map(p => Math.max(p.income, p.expenses, p.savings)), 1);
-    this.yTicks = this.makeTicks(0, maxValue, 4);
+    this.yTicks = makeTicks(0, maxValue, 4, this.geometry, formatCurrencyShort);
     this.bars = [];
     ps.forEach((p, i) => {
       const gx = this.PL + i * groupW;
@@ -97,7 +98,7 @@ export class ChartsComponent {
     const cashMax = Math.max(...cashValues);
     const cashRange = cashMax - cashMin || 1;
 
-    this.cashTicks = this.makeTicks(cashMin, cashMax, 4);
+    this.cashTicks = makeTicks(cashMin, cashMax, 4, this.geometry, formatCurrencyShort);
 
     const stepX = n > 1 ? this.chartW / (n - 1) : this.chartW / 2;
     const startX = n === 1 ? this.PL + this.chartW / 2 : this.PL;
@@ -125,28 +126,5 @@ export class ChartsComponent {
     } else {
       this.zeroLineY = null;
     }
-  }
-
-  private makeTicks(min: number, max: number, count: number): Tick[] {
-    const step = this.niceStep((max - min) / count || max / count || 1);
-    const start = Math.floor(min / step) * step;
-    const ticks: Tick[] = [];
-    for (let v = start; v <= max + step * 0.5; v += step) {
-      const y = this.PT + (1 - (v - min) / Math.max(max - min, 1)) * this.chartH;
-      if (y < this.PT - 4 || y > this.H - this.PB + 4) continue;
-      ticks.push({ y, label: formatCurrencyShort(v) });
-    }
-    return ticks;
-  }
-
-  private niceStep(rough: number): number {
-    if (rough <= 0) return 1;
-    const exp = Math.floor(Math.log10(rough));
-    const mag = Math.pow(10, exp);
-    const norm = rough / mag;
-    if (norm < 1.5) return mag;
-    if (norm < 3.5) return 2 * mag;
-    if (norm < 7.5) return 5 * mag;
-    return 10 * mag;
   }
 }

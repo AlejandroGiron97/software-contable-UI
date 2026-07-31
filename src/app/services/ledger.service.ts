@@ -1,10 +1,19 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { Period, PeriodItem, AlertCode } from '../models/period.model';
 import { DEBT_RATIO_WARNING_PCT, DEBT_RATIO_CRITICAL_PCT, LOW_CASH_BUFFER_RATIO } from '../models/alert-thresholds.const';
+import { comparePeriods } from '../core/utils/period-order.util';
+import { generateId } from '../core/utils/id-generator.util';
+import { STORAGE_KEYS } from '../core/persistence/storage-keys.const';
+import { loadFromStorage, saveToStorage } from '../core/persistence/local-storage.util';
 
 @Injectable({ providedIn: 'root' })
 export class LedgerService {
   readonly periods = signal<Period[]>([]);
+
+  constructor() {
+    this.periods.set(this.sortPeriods(loadFromStorage<Period[]>(STORAGE_KEYS.periods, [])));
+    effect(() => saveToStorage(STORAGE_KEYS.periods, this.periods()));
+  }
 
   readonly totalIncome = computed(() =>
     this.periods().reduce((s, p) => s + p.income, 0)
@@ -37,7 +46,7 @@ export class LedgerService {
       .filter(i => i.type === 'ingreso')
       .reduce((s, i) => s + i.amount, 0);
     const expenses = items
-      .filter(i => i.type === 'egreso')
+      .filter(i => i.type === 'egreso' && !i.fundedBySource)
       .reduce((s, i) => s + i.amount, 0);
     const savings = items
       .filter(i => i.type === 'ahorro')
@@ -51,10 +60,8 @@ export class LedgerService {
   addMonth(year: number, month: string): boolean {
     if (this.getPeriod(year, month)) return false;
     const items: PeriodItem[] = [];
-    this.periods.update(ps => [
-      ...ps,
-      { year, month, items, ...this.computeTotals(items) },
-    ]);
+    const newPeriod: Period = { year, month, items, ...this.computeTotals(items) };
+    this.periods.update(ps => this.sortPeriods([...ps, newPeriod]));
     return true;
   }
 
@@ -88,10 +95,14 @@ export class LedgerService {
   }
 
   loadPeriods(periods: Period[]): void {
-    this.periods.set(periods);
+    this.periods.set(this.sortPeriods(periods));
   }
 
   generateId(): string {
-    return Math.random().toString(36).slice(2, 10);
+    return generateId();
+  }
+
+  private sortPeriods(periods: Period[]): Period[] {
+    return [...periods].sort(comparePeriods);
   }
 }

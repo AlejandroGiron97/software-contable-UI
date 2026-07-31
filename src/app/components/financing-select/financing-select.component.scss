@@ -1,0 +1,6 @@
+.financing-sel {
+  width: 100%; padding: .3rem .35rem; border: 1.5px solid #e2e8f0;
+  border-radius: 6px; font-size: .78rem; outline: none; background: white; color: #475569;
+}
+.financing-sel:focus { border-color: #2563eb; }
+.financing-sel:disabled { background: #f8fafc; color: #cbd5e1; cursor: not-allowed; }

@@ -1,0 +1,26 @@
+@if (!previous) {
+  <div class="comparison-card comparison-neutral">
+    Primer periodo registrado — sin datos previos para comparar
+  </div>
+} @else {
+  <div class="comparison-card">
+    <div class="comparison-header">
+      <span>vs. {{ previous.month }} {{ previous.year }}</span>
+      @if (!isConsecutive) {
+        <span class="comparison-warn">no consecutivo</span>
+      }
+    </div>
+    <div class="comparison-metrics">
+      @for (m of metrics; track m.label) {
+        <div class="comparison-metric" [class.good]="m.good && (m.trend === 'up' || m.trend === 'down' || m.trend === 'new')" [class.bad]="!m.good && (m.trend === 'up' || m.trend === 'down' || m.trend === 'new')">
+          <span class="cm-label">{{ m.label }}</span>
+          <span class="cm-value">
+            @if (m.trend === 'up') { ▲ }
+            @if (m.trend === 'down') { ▼ }
+            {{ m.pctText }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+}

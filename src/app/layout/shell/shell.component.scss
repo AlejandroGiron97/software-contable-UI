@@ -1,0 +1,69 @@
+* { box-sizing: border-box; }
+.layout {
+  display: flex; flex-direction: column; height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f1f5f9;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; gap: 1rem;
+  background: #1f2937; color: white;
+  padding: .65rem 1.25rem; flex-shrink: 0;
+}
+.brand { display: flex; align-items: center; gap: .5rem; font-weight: 800; font-size: .9rem; white-space: nowrap; }
+.brand-ico { width: 20px; height: 20px; color: #60a5fa; }
+.topbar-kpis { display: flex; align-items: center; gap: .5rem; flex: 1; overflow-x: auto; }
+.kpi { display: flex; flex-direction: column; white-space: nowrap; }
+.kpi-lbl { font-size: .6rem; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .04em; }
+.kpi-val { font-size: .82rem; font-weight: 700; }
+.k-green { color: #4ade80; }
+.k-red   { color: #f87171; }
+.k-blue  { color: #60a5fa; }
+.k-amber { color: #fbbf24; }
+.kdiv { width: 1px; height: 24px; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.tb-badge {
+  font-size: .72rem; font-weight: 700; padding: .18rem .6rem;
+  border-radius: 20px; letter-spacing: .02em; white-space: nowrap; width: fit-content;
+}
+.tb-badge.tb-1 { background: rgba(34,197,94,.15); color: #4ade80; }
+.tb-badge.tb-2 { background: rgba(217,119,6,.2); color: #fbbf24; }
+.tb-badge.tb-3 { background: rgba(220,38,38,.2); color: #f87171; }
+.topbar-actions { display: flex; align-items: center; gap: .4rem; flex-shrink: 0; }
+.tbtn {
+  display: flex; align-items: center; gap: .35rem;
+  padding: .4rem .75rem; border: none; border-radius: 7px;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+  transition: opacity .15s; white-space: nowrap;
+}
+.tbtn svg { width: 15px; height: 15px; }
+.tbtn:disabled { opacity: .4; cursor: not-allowed; }
+.tbtn-green { background: #16a34a; color: white; }
+.tbtn-green:hover:not(:disabled) { background: #15803d; }
+.tbtn-red { background: #dc2626; color: white; }
+.tbtn-red:hover:not(:disabled) { background: #b91c1c; }
+.tbtn-blue { background: #2563eb; color: white; }
+.tbtn-blue:hover { background: #1d4ed8; }
+.tbtn-ghost { background: rgba(255,255,255,.1); color: white; padding: .4rem; }
+.tbtn-ghost:hover { background: rgba(255,255,255,.2); }
+
+/* ── TABS ── */
+.topbar-tabs {
+  display: flex; gap: .25rem; background: #111827;
+  padding: 0 1.25rem; flex-shrink: 0;
+}
+.tab-link {
+  display: inline-block; padding: .6rem 1rem; font-size: .8rem; font-weight: 600;
+  color: #9ca3af; text-decoration: none; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tab-link:hover { color: #e5e7eb; }
+.tab-link.active { color: white; border-bottom-color: #2563eb; }
+
+.import-error {
+  background: #fef2f2; color: #dc2626; font-size: .82rem;
+  padding: .5rem 1.25rem; border-bottom: 1px solid #fecaca;
+}
+
+/* ── CONTENT ── */
+.shell-content { display: flex; flex: 1; overflow: hidden; }

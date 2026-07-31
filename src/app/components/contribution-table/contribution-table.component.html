@@ -1,0 +1,64 @@
+<div class="contrib-table-wrap">
+  <table class="contrib-table">
+    <thead>
+      <tr>
+        <th class="th-fecha">Fecha</th>
+        @if (showUnit) { <th class="th-apto">Apto</th> }
+        <th class="th-monto">Monto (COP $)</th>
+        @if (kind === 'retiro') { <th class="th-motivo">Motivo</th> }
+        <th class="th-del"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @if (rows.length === 0) {
+        <tr class="tr-empty">
+          <td [attr.colspan]="(showUnit ? 1 : 0) + (kind === 'retiro' ? 1 : 0) + 3">
+            <div class="empty-hint">Usa la fila de abajo para agregar el primer {{ kind }}</div>
+          </td>
+        </tr>
+      }
+      @for (r of rows; track r.id) {
+        <tr class="tr-row">
+          <td class="td-fecha">{{ r.date }}</td>
+          @if (showUnit) { <td class="td-apto">{{ r.unit || '—' }}</td> }
+          <td class="td-monto">{{ formatCurrency(r.amount) }}</td>
+          @if (kind === 'retiro') { <td class="td-motivo">{{ r.reason || '—' }}</td> }
+          <td class="td-del">
+            <button class="btn-del" (click)="remove(r.id)" title="Eliminar">✕</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+
+    <tfoot>
+      <tr class="tr-nueva">
+        <td class="td-fecha">
+          <input type="date" [(ngModel)]="draft.date" class="cell-date nueva" />
+        </td>
+        @if (showUnit) {
+          <td class="td-apto">
+            <select [(ngModel)]="draft.unit" class="cell-sel">
+              <option value="">— Apto —</option>
+              @for (u of units; track u) {
+                <option [value]="u">{{ u }}</option>
+              }
+              <option value="otros">Otros</option>
+            </select>
+          </td>
+        }
+        <td class="td-monto">
+          <input type="number" [(ngModel)]="draft.amount" placeholder="0" min="0" class="cell-num" (keydown.enter)="add()" />
+        </td>
+        @if (kind === 'retiro') {
+          <td class="td-motivo">
+            <input type="text" [(ngModel)]="draft.reason" placeholder="Motivo (opcional)" class="cell-txt" (keydown.enter)="add()" />
+          </td>
+        }
+        <td class="td-del">
+          <button class="btn-add" (click)="add()" [disabled]="!isDraftValid" title="Agregar (Enter)">+</button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>

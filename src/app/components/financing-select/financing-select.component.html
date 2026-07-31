@@ -1,0 +1,17 @@
+<select
+  class="financing-sel"
+  [ngModel]="selectValue"
+  (ngModelChange)="onChange($event)"
+  [disabled]="disabled"
+  title="Financiado por"
+>
+  <option value="">— Sin financiar —</option>
+  <option value="savings">Ahorro</option>
+  @if (campaigns().length) {
+    <optgroup label="Cuotas Extraordinarias">
+      @for (c of campaigns(); track c.id) {
+        <option [value]="'campaign:' + c.id">{{ c.name }}</option>
+      }
+    </optgroup>
+  }
+</select>

@@ -291,8 +291,6 @@ export class PdfReportService {
         ['', '', '', '', '', ''],
         ['', 'TOTAL INGRESOS', '', formatCurrency(p.income), '', ''],
         ['', 'TOTAL EGRESOS', '', formatCurrency(p.expenses), '', ''],
-        ['', 'TOTAL AHORRO', '', formatCurrency(p.savings), '', ''],
-        ['', 'CAJA RESTANTE', '', formatCurrency(p.cash), '', ''],
       ],
       headStyles: { fillColor: [31, 41, 55] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontSize: 9 },
       styles: { fontSize: 9, cellPadding: 3 },
@@ -326,10 +324,6 @@ export class PdfReportService {
         if (rowIdx >= itemCount + 1) {
           data.cell.styles.fontStyle = 'bold';
           data.cell.styles.fillColor = [248, 250, 252];
-        }
-        if (rowIdx === itemCount + 4) {
-          data.cell.styles.fillColor = p.alert === 1 ? [240, 253, 244] : p.alert === 2 ? [255, 251, 235] : [254, 242, 242];
-          data.cell.styles.textColor = color;
         }
       },
     });

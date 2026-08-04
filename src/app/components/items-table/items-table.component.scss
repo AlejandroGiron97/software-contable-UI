@@ -1,5 +1,32 @@
 .items-table-wrap { overflow-x: auto; }
 
+.filters-bar {
+  display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem;
+  padding: .75rem 1rem; border-bottom: 1px solid #f1f5f9; background: #f8fafc;
+}
+.filter-field { display: flex; flex-direction: column; gap: .2rem; }
+.filter-field label {
+  font-size: .65rem; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.filter-field input, .filter-field select {
+  padding: .35rem .5rem; border: 1.5px solid #e2e8f0; border-radius: 6px;
+  font-size: .8rem; outline: none; background: white; color: #0f172a;
+}
+.filter-field input { width: 120px; }
+.filter-field input[type="number"] { width: 100px; }
+.filter-field input:focus, .filter-field select:focus { border-color: #2563eb; }
+.btn-clear-filters {
+  padding: .4rem .7rem; border: 1px solid #e2e8f0; border-radius: 6px;
+  background: white; color: #64748b; font-size: .78rem; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.btn-clear-filters:hover { background: #f1f5f9; }
+.filter-count {
+  margin-left: auto; align-self: center;
+  font-size: .78rem; color: #94a3b8; white-space: nowrap;
+}
+
 .items-table {
   width: 100%; border-collapse: collapse;
   font-size: .875rem;

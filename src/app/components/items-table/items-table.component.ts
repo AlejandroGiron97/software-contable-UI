@@ -51,6 +51,34 @@ export class ItemsTableComponent implements OnChanges {
   readonly suggestedConcepts = SUGGESTED_CONCEPTS;
   readonly units = UNITS;
 
+  filters = {
+    dateFrom: '',
+    dateTo: '',
+    type: '' as '' | 'ingreso' | 'egreso',
+    minAmount: null as number | null,
+    maxAmount: null as number | null,
+  };
+
+  get filteredItems(): EditableItem[] {
+    return this.items.filter(i => {
+      if (this.filters.dateFrom && (!i.date || i.date < this.filters.dateFrom)) return false;
+      if (this.filters.dateTo && (!i.date || i.date > this.filters.dateTo)) return false;
+      if (this.filters.type && i.type !== this.filters.type) return false;
+      if (this.filters.minAmount != null && i.amount < this.filters.minAmount) return false;
+      if (this.filters.maxAmount != null && i.amount > this.filters.maxAmount) return false;
+      return true;
+    });
+  }
+
+  get hasActiveFilters(): boolean {
+    const f = this.filters;
+    return !!(f.dateFrom || f.dateTo || f.type || f.minAmount != null || f.maxAmount != null);
+  }
+
+  clearFilters(): void {
+    this.filters = { dateFrom: '', dateTo: '', type: '', minAmount: null, maxAmount: null };
+  }
+
   ngOnChanges(): void {
     const p = this.ledger.getPeriod(this.year, this.month);
     this.items = (p?.items ?? []).map(i => ({
@@ -122,8 +150,8 @@ export class ItemsTableComponent implements OnChanges {
     this.draft = { concept: '', type: this.draft.type, amount: 0, date: '', status: '', unit: '', financing: null };
   }
 
-  remove(index: number): void {
-    this.items = this.items.filter((_, idx) => idx !== index);
+  remove(id: string): void {
+    this.items = this.items.filter(item => item.id !== id);
     this.save();
   }
 }

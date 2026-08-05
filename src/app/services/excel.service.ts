@@ -7,6 +7,7 @@ import { FileSaverService } from '../core/services/file-saver.service';
 import { Period, PeriodItem, ItemType, ItemStatus } from '../models/period.model';
 import { SavingsFund, ExtraFeeCampaign, FundContribution, FundWithdrawal } from '../models/fund.model';
 import { computeFundTotals } from '../core/utils/fund-totals.util';
+import { paymentMethodLabel, parsePaymentMethodLabel } from '../core/utils/payment-method.util';
 
 @Injectable({ providedIn: 'root' })
 export class ExcelService {
@@ -34,6 +35,7 @@ export class ExcelService {
         'Monto': item.amount,
         'Estado': item.status ?? '',
         'Apto': item.unit ?? '',
+        'Medio_Pago': paymentMethodLabel(item.paymentMethod),
         'Financiado_Por': item.fundedBySource === 'savings'
           ? 'Ahorro'
           : item.fundedBySource === 'extra-fee'
@@ -64,11 +66,11 @@ export class ExcelService {
 
     // Sheet 3: savings detail (contributions + withdrawals)
     const savingsDetailRows = [
-      ...savingsFund.contributions.map(c => ({ 'Fecha': c.date, 'Tipo': 'Aporte', 'Monto': c.amount, 'Motivo': '' })),
-      ...savingsFund.withdrawals.map(w => ({ 'Fecha': w.date, 'Tipo': 'Retiro', 'Monto': w.amount, 'Motivo': w.reason ?? '' })),
+      ...savingsFund.contributions.map(c => ({ 'Fecha': c.date, 'Tipo': 'Aporte', 'Monto': c.amount, 'Motivo': '', 'Medio_Pago': paymentMethodLabel(c.paymentMethod) })),
+      ...savingsFund.withdrawals.map(w => ({ 'Fecha': w.date, 'Tipo': 'Retiro', 'Monto': w.amount, 'Motivo': w.reason ?? '', 'Medio_Pago': paymentMethodLabel(w.paymentMethod) })),
     ];
     const savingsDetailSheet = XLSX.utils.json_to_sheet(
-      savingsDetailRows.length ? savingsDetailRows : [{ 'Fecha': '', 'Tipo': '', 'Monto': '', 'Motivo': '' }]
+      savingsDetailRows.length ? savingsDetailRows : [{ 'Fecha': '', 'Tipo': '', 'Monto': '', 'Motivo': '', 'Medio_Pago': '' }]
     );
     XLSX.utils.book_append_sheet(workbook, savingsDetailSheet, 'Ahorro_Detalle');
 
@@ -84,11 +86,11 @@ export class ExcelService {
 
     // Sheet 5: extra-fee campaigns detail (contributions + withdrawals)
     const campaignDetailRows = campaigns.flatMap(c => [
-      ...c.contributions.map(x => ({ 'Campaña': c.name, 'Tipo': 'Aporte', 'Fecha': x.date, 'Monto': x.amount, 'Apto': x.unit ?? '', 'Motivo': '' })),
-      ...c.withdrawals.map(x => ({ 'Campaña': c.name, 'Tipo': 'Retiro', 'Fecha': x.date, 'Monto': x.amount, 'Apto': '', 'Motivo': x.reason ?? '' })),
+      ...c.contributions.map(x => ({ 'Campaña': c.name, 'Tipo': 'Aporte', 'Fecha': x.date, 'Monto': x.amount, 'Apto': x.unit ?? '', 'Motivo': '', 'Medio_Pago': paymentMethodLabel(x.paymentMethod) })),
+      ...c.withdrawals.map(x => ({ 'Campaña': c.name, 'Tipo': 'Retiro', 'Fecha': x.date, 'Monto': x.amount, 'Apto': '', 'Motivo': x.reason ?? '', 'Medio_Pago': paymentMethodLabel(x.paymentMethod) })),
     ]);
     const campaignDetailSheet = XLSX.utils.json_to_sheet(
-      campaignDetailRows.length ? campaignDetailRows : [{ 'Campaña': '', 'Tipo': '', 'Fecha': '', 'Monto': '', 'Apto': '', 'Motivo': '' }]
+      campaignDetailRows.length ? campaignDetailRows : [{ 'Campaña': '', 'Tipo': '', 'Fecha': '', 'Monto': '', 'Apto': '', 'Motivo': '', 'Medio_Pago': '' }]
     );
     XLSX.utils.book_append_sheet(workbook, campaignDetailSheet, 'Cuotas_Detalle');
 
@@ -181,6 +183,8 @@ export class ExcelService {
       if (status === 'pagado' || status === 'pendiente') item.status = status as ItemStatus;
       const unit = r['Apto'] ? String(r['Apto']).trim() : '';
       if (unit) item.unit = unit;
+      const medioPago = parsePaymentMethodLabel(r['Medio_Pago'] ? String(r['Medio_Pago']).trim() : '');
+      if (medioPago) item.paymentMethod = medioPago;
       const financiadoPor = r['Financiado_Por'] ? String(r['Financiado_Por']).trim() : '';
       if (financiadoPor === 'Ahorro') {
         item.fundedBySource = 'savings';
@@ -229,12 +233,16 @@ export class ExcelService {
         const amount = +r['Monto'];
         if (!date || !amount) return;
         const tipo = String(r['Tipo'] ?? '').trim();
+        const medioPago = parsePaymentMethodLabel(r['Medio_Pago'] ? String(r['Medio_Pago']).trim() : '');
         if (tipo === 'Aporte') {
-          savingsFund.contributions.push({ id: this.ledger.generateId(), date, amount });
+          const contribution: FundContribution = { id: this.ledger.generateId(), date, amount };
+          if (medioPago) contribution.paymentMethod = medioPago;
+          savingsFund.contributions.push(contribution);
         } else if (tipo === 'Retiro') {
           const reason = r['Motivo'] ? String(r['Motivo']).trim() : '';
           const withdrawal: FundWithdrawal = { id: this.ledger.generateId(), date, amount };
           if (reason) withdrawal.reason = reason;
+          if (medioPago) withdrawal.paymentMethod = medioPago;
           savingsFund.withdrawals.push(withdrawal);
         }
       });
@@ -276,15 +284,18 @@ export class ExcelService {
           campaignsByName.set(name, campaign);
         }
         const tipo = String(r['Tipo'] ?? '').trim();
+        const medioPago = parsePaymentMethodLabel(r['Medio_Pago'] ? String(r['Medio_Pago']).trim() : '');
         if (tipo === 'Aporte') {
           const unit = r['Apto'] ? String(r['Apto']).trim() : '';
           const contribution: FundContribution = { id: this.ledger.generateId(), date, amount };
           if (unit) contribution.unit = unit;
+          if (medioPago) contribution.paymentMethod = medioPago;
           campaign.contributions.push(contribution);
         } else if (tipo === 'Retiro') {
           const reason = r['Motivo'] ? String(r['Motivo']).trim() : '';
           const withdrawal: FundWithdrawal = { id: this.ledger.generateId(), date, amount };
           if (reason) withdrawal.reason = reason;
+          if (medioPago) withdrawal.paymentMethod = medioPago;
           campaign.withdrawals.push(withdrawal);
         }
       });

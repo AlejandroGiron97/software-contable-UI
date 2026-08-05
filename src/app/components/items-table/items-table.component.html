@@ -18,6 +18,14 @@
       </select>
     </div>
     <div class="filter-field">
+      <label>Medio</label>
+      <select [(ngModel)]="filters.paymentMethod">
+        <option value="">Todos</option>
+        <option value="bank">Cuenta</option>
+        <option value="cash">Efectivo</option>
+      </select>
+    </div>
+    <div class="filter-field">
       <label>Monto mín.</label>
       <input type="number" [(ngModel)]="filters.minAmount" min="0" placeholder="0" />
     </div>
@@ -41,6 +49,7 @@
         <th class="th-monto">Monto (COP $)</th>
         <th class="th-estado">Estado</th>
         <th class="th-apto">Apto</th>
+        <th class="th-medio">Medio</th>
         <th class="th-fin">Fin.</th>
         <th class="th-del"></th>
       </tr>
@@ -49,7 +58,7 @@
     <tbody>
       @if (filteredItems.length === 0) {
         <tr class="tr-empty">
-          <td colspan="9">
+          <td colspan="10">
             <div class="empty-hint">
               @if (items.length === 0) {
                 Usa la fila de abajo para agregar el primer concepto de este mes
@@ -133,6 +142,18 @@
               <option value="otros">Otros</option>
             </select>
           </td>
+          <td class="td-medio">
+            <select
+              [(ngModel)]="item.paymentMethod"
+              (change)="save()"
+              class="cell-sel"
+              [ngClass]="paymentMethodClass(item.paymentMethod)"
+            >
+              <option value="">— Medio —</option>
+              <option value="bank">🏦 Cuenta</option>
+              <option value="cash">💵 Efectivo</option>
+            </select>
+          </td>
           <td class="td-fin">
             <app-financing-select
               [value]="item.financing"
@@ -212,6 +233,17 @@
               <option [value]="u">{{ u }}</option>
             }
             <option value="otros">Otros</option>
+          </select>
+        </td>
+        <td class="td-medio">
+          <select
+            [(ngModel)]="draft.paymentMethod"
+            class="cell-sel"
+            [ngClass]="paymentMethodClass(draft.paymentMethod)"
+          >
+            <option value="">— Medio —</option>
+            <option value="bank">🏦 Cuenta</option>
+            <option value="cash">💵 Efectivo</option>
           </select>
         </td>
         <td class="td-fin">

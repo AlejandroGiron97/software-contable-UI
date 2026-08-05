@@ -125,6 +125,18 @@
             <span class="tot-lbl">Total Cuota Extra</span>
             <span class="tot-val t-amber">{{ formatCurrency(monthExtraFeeCollected) }}</span>
           </div>
+          <div class="tot-item">
+            <span class="tot-lbl">En Cuenta (mes)</span>
+            <span class="tot-val" [class.t-green]="monthBankBalance >= 0" [class.t-red]="monthBankBalance < 0">
+              {{ formatCurrency(monthBankBalance) }}
+            </span>
+          </div>
+          <div class="tot-item">
+            <span class="tot-lbl">En Efectivo (mes)</span>
+            <span class="tot-val" [class.t-green]="monthCashBalance >= 0" [class.t-red]="monthCashBalance < 0">
+              {{ formatCurrency(monthCashBalance) }}
+            </span>
+          </div>
         </div>
       </div>
 

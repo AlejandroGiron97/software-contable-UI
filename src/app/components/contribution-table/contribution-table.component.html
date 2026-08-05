@@ -6,6 +6,7 @@
         @if (showUnit) { <th class="th-apto">Apto</th> }
         <th class="th-monto">Monto (COP $)</th>
         @if (kind === 'retiro') { <th class="th-motivo">Motivo</th> }
+        <th class="th-medio">Medio</th>
         <th class="th-del"></th>
       </tr>
     </thead>
@@ -13,7 +14,7 @@
     <tbody>
       @if (rows.length === 0) {
         <tr class="tr-empty">
-          <td [attr.colspan]="(showUnit ? 1 : 0) + (kind === 'retiro' ? 1 : 0) + 3">
+          <td [attr.colspan]="(showUnit ? 1 : 0) + (kind === 'retiro' ? 1 : 0) + 4">
             <div class="empty-hint">Usa la fila de abajo para agregar el primer {{ kind }}</div>
           </td>
         </tr>
@@ -24,6 +25,11 @@
           @if (showUnit) { <td class="td-apto">{{ r.unit || '—' }}</td> }
           <td class="td-monto">{{ formatCurrency(r.amount) }}</td>
           @if (kind === 'retiro') { <td class="td-motivo">{{ r.reason || '—' }}</td> }
+          <td class="td-medio">
+            @if (r.paymentMethod === 'bank') { <span class="medio-tag medio-bank">🏦 Cuenta</span> }
+            @else if (r.paymentMethod === 'cash') { <span class="medio-tag medio-cash">💵 Efectivo</span> }
+            @else { <span class="medio-tag medio-empty">—</span> }
+          </td>
           <td class="td-del">
             <button class="btn-del" (click)="remove(r.id)" title="Eliminar">✕</button>
           </td>
@@ -55,6 +61,13 @@
             <input type="text" [(ngModel)]="draft.reason" placeholder="Motivo (opcional)" class="cell-txt" (keydown.enter)="add()" />
           </td>
         }
+        <td class="td-medio">
+          <select [(ngModel)]="draft.paymentMethod" class="cell-sel">
+            <option value="">— Medio —</option>
+            <option value="bank">🏦 Cuenta</option>
+            <option value="cash">💵 Efectivo</option>
+          </select>
+        </td>
         <td class="td-del">
           <button class="btn-add" (click)="add()" [disabled]="!isDraftValid" title="Agregar (Enter)">+</button>
         </td>

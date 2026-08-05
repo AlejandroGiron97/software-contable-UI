@@ -6,6 +6,7 @@ import { FundBase } from '../models/fund.model';
 import { FileSaverService } from '../core/services/file-saver.service';
 import { formatCurrency } from '../core/utils/currency-formatter.util';
 import { computeFundTotals } from '../core/utils/fund-totals.util';
+import { computeItemsMethodBalance } from '../core/utils/payment-method-balance.util';
 import { LedgerService } from './ledger.service';
 import { FundsService } from './funds.service';
 
@@ -275,6 +276,8 @@ export class PdfReportService {
     doc.text(`DETALLE: ${p.month.toUpperCase()} ${p.year}`, 14, 13);
 
     const itemCount = p.items.length;
+    const bankBalance = computeItemsMethodBalance(p.items, 'bank');
+    const cashBalance = computeItemsMethodBalance(p.items, 'cash');
 
     autoTable(doc, {
       startY: 30,
@@ -291,6 +294,8 @@ export class PdfReportService {
         ['', '', '', '', '', ''],
         ['', 'TOTAL INGRESOS', '', formatCurrency(p.income), '', ''],
         ['', 'TOTAL EGRESOS', '', formatCurrency(p.expenses), '', ''],
+        ['', 'EN CUENTA', '', formatCurrency(bankBalance), '', ''],
+        ['', 'EN EFECTIVO', '', formatCurrency(cashBalance), '', ''],
       ],
       headStyles: { fillColor: [31, 41, 55] as [number, number, number], textColor: [255, 255, 255] as [number, number, number], fontSize: 9 },
       styles: { fontSize: 9, cellPadding: 3 },

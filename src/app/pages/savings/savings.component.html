@@ -22,6 +22,14 @@
         {{ formatCurrency(totals().available) }}
       </span>
     </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">En Cuenta</span>
+      <span class="kpi-val k-blue">{{ formatCurrency(bankBalance) }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-lbl">En Efectivo</span>
+      <span class="kpi-val k-green">{{ formatCurrency(cashBalance) }}</span>
+    </div>
   </div>
 
   @if (linkedExpenses.length) {

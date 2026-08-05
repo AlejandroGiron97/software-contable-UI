@@ -17,6 +17,7 @@ thead th {
 th.th-fecha { width: 120px; }
 th.th-apto  { width: 100px; }
 th.th-monto { text-align: right; }
+th.th-medio { width: 110px; }
 th.th-del   { width: 36px; }
 
 tbody tr { border-bottom: 1px solid #f1f5f9; }
@@ -57,3 +58,8 @@ td { padding: .4rem .6rem; vertical-align: middle; }
 
 tfoot tr { background: #f8fafc; border-top: 2px solid #e2e8f0; }
 tfoot td { padding: .4rem .5rem; }
+
+.medio-tag { font-size: .78rem; font-weight: 600; white-space: nowrap; }
+.medio-bank { color: #2563eb; }
+.medio-cash { color: #15803d; }
+.medio-empty { color: #cbd5e1; }

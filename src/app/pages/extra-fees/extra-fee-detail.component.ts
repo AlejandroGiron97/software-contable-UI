@@ -7,6 +7,7 @@ import { EvolutionChartComponent } from '../../components/evolution-chart/evolut
 import { buildFundTimeline, FundTimelinePoint } from '../../core/utils/fund-timeline.util';
 import { groupContributionsByMonth, MonthlyTotal } from '../../core/utils/monthly-breakdown.util';
 import { findLinkedExpenses, LinkedExpense } from '../../core/utils/linked-expenses.util';
+import { computeFundMethodBalance } from '../../core/utils/fund-totals.util';
 import { formatCurrency } from '../../core/utils/currency-formatter.util';
 
 @Component({
@@ -47,6 +48,16 @@ export class ExtraFeeDetailComponent {
   get monthlyTotals(): MonthlyTotal[] {
     const c = this.campaign;
     return c ? groupContributionsByMonth(c.contributions) : [];
+  }
+
+  get bankBalance(): number {
+    const c = this.campaign;
+    return c ? computeFundMethodBalance(c, 'bank') : 0;
+  }
+
+  get cashBalance(): number {
+    const c = this.campaign;
+    return c ? computeFundMethodBalance(c, 'cash') : 0;
   }
 
   get linkedExpenses(): LinkedExpense[] {

@@ -38,6 +38,7 @@
 .kpi-val { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
 .k-green { color: #15803d; }
 .k-red { color: #dc2626; }
+.k-blue { color: #2563eb; }
 
 .tables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 @media (max-width: 900px) { .tables-grid { grid-template-columns: 1fr; } }

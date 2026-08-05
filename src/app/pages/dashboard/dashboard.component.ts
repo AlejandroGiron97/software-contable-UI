@@ -11,6 +11,7 @@ import { formatCurrency, formatCurrencyShort } from '../../core/utils/currency-f
 import { alertDotClass } from '../../shared/alert/alert-status.util';
 import { MONTHS } from '../../core/utils/period-order.util';
 import { sumContributionsForPeriod } from '../../core/utils/fund-period-match.util';
+import { computeItemsMethodBalance } from '../../core/utils/payment-method-balance.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -103,6 +104,16 @@ export class DashboardComponent {
     const { year, month } = this.currentPeriod;
     return this.funds.extraFeeCampaigns()
       .reduce((sum, c) => sum + sumContributionsForPeriod(c.contributions, year, month), 0);
+  }
+
+  get monthBankBalance(): number {
+    if (!this.currentPeriod) return 0;
+    return computeItemsMethodBalance(this.currentPeriod.items, 'bank');
+  }
+
+  get monthCashBalance(): number {
+    if (!this.currentPeriod) return 0;
+    return computeItemsMethodBalance(this.currentPeriod.items, 'cash');
   }
 
   downloadPdfForMonth(): void { if (this.currentPeriod) this.pdfReportService.exportMonth(this.currentPeriod); }

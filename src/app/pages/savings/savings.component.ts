@@ -5,6 +5,7 @@ import { ContributionTableComponent, ContributionRow } from '../../components/co
 import { EvolutionChartComponent } from '../../components/evolution-chart/evolution-chart.component';
 import { buildFundTimeline } from '../../core/utils/fund-timeline.util';
 import { findLinkedExpenses, LinkedExpense } from '../../core/utils/linked-expenses.util';
+import { computeFundMethodBalance } from '../../core/utils/fund-totals.util';
 import { formatCurrency } from '../../core/utils/currency-formatter.util';
 
 @Component({
@@ -24,6 +25,14 @@ export class SavingsComponent {
 
   get timeline() {
     return buildFundTimeline(this.fund());
+  }
+
+  get bankBalance(): number {
+    return computeFundMethodBalance(this.fund(), 'bank');
+  }
+
+  get cashBalance(): number {
+    return computeFundMethodBalance(this.fund(), 'cash');
   }
 
   get linkedExpenses(): LinkedExpense[] {

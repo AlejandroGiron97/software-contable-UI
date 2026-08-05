@@ -1,8 +1,11 @@
+import { PaymentMethod } from './period.model';
+
 export interface FundContribution {
   id: string;
   date: string;       // 'YYYY-MM-DD'
   amount: number;
   unit?: string;       // solo aplica a cuotas extraordinarias (aporte por apartamento)
+  paymentMethod?: PaymentMethod;
 }
 
 export interface FundWithdrawal {
@@ -10,6 +13,7 @@ export interface FundWithdrawal {
   date: string;
   amount: number;
   reason?: string;
+  paymentMethod?: PaymentMethod;
 }
 
 export interface FundBase {

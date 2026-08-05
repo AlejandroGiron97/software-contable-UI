@@ -15,10 +15,11 @@ const SUGGESTED_CONCEPTS = [
   'Pago Mantenimiento',
 ];
 
-type EditableItem = Omit<PeriodItem, 'status' | 'date' | 'unit' | 'fundedBySource' | 'fundedByCampaignId'> & {
+type EditableItem = Omit<PeriodItem, 'status' | 'date' | 'unit' | 'fundedBySource' | 'fundedByCampaignId' | 'paymentMethod'> & {
   date: string;
   status: string;
   unit: string;
+  paymentMethod: string;
   financing: FinancingValue;
 };
 
@@ -44,8 +45,11 @@ export class ItemsTableComponent implements OnChanges {
   private ledger = inject(LedgerService);
 
   items: EditableItem[] = [];
-  draft: { concept: string; type: ItemType; amount: number; date: string; status: string; unit: string; financing: FinancingValue } = {
-    concept: '', type: 'egreso', amount: 0, date: '', status: '', unit: '', financing: null,
+  draft: {
+    concept: string; type: ItemType; amount: number; date: string; status: string;
+    unit: string; paymentMethod: string; financing: FinancingValue;
+  } = {
+    concept: '', type: 'egreso', amount: 0, date: '', status: '', unit: '', paymentMethod: '', financing: null,
   };
 
   readonly suggestedConcepts = SUGGESTED_CONCEPTS;
@@ -55,6 +59,7 @@ export class ItemsTableComponent implements OnChanges {
     dateFrom: '',
     dateTo: '',
     type: '' as '' | 'ingreso' | 'egreso',
+    paymentMethod: '' as '' | 'bank' | 'cash',
     minAmount: null as number | null,
     maxAmount: null as number | null,
   };
@@ -64,6 +69,7 @@ export class ItemsTableComponent implements OnChanges {
       if (this.filters.dateFrom && (!i.date || i.date < this.filters.dateFrom)) return false;
       if (this.filters.dateTo && (!i.date || i.date > this.filters.dateTo)) return false;
       if (this.filters.type && i.type !== this.filters.type) return false;
+      if (this.filters.paymentMethod && i.paymentMethod !== this.filters.paymentMethod) return false;
       if (this.filters.minAmount != null && i.amount < this.filters.minAmount) return false;
       if (this.filters.maxAmount != null && i.amount > this.filters.maxAmount) return false;
       return true;
@@ -72,11 +78,11 @@ export class ItemsTableComponent implements OnChanges {
 
   get hasActiveFilters(): boolean {
     const f = this.filters;
-    return !!(f.dateFrom || f.dateTo || f.type || f.minAmount != null || f.maxAmount != null);
+    return !!(f.dateFrom || f.dateTo || f.type || f.paymentMethod || f.minAmount != null || f.maxAmount != null);
   }
 
   clearFilters(): void {
-    this.filters = { dateFrom: '', dateTo: '', type: '', minAmount: null, maxAmount: null };
+    this.filters = { dateFrom: '', dateTo: '', type: '', paymentMethod: '', minAmount: null, maxAmount: null };
   }
 
   ngOnChanges(): void {
@@ -86,6 +92,7 @@ export class ItemsTableComponent implements OnChanges {
       date: i.date ?? '',
       status: i.status ?? '',
       unit: i.unit ?? '',
+      paymentMethod: i.paymentMethod ?? '',
       financing: toFinancing(i),
     }));
     this.sortByDate();
@@ -101,6 +108,12 @@ export class ItemsTableComponent implements OnChanges {
     return 'sel-empty';
   }
 
+  paymentMethodClass(method: string): string {
+    if (method === 'bank') return 'sel-bank';
+    if (method === 'cash') return 'sel-cash';
+    return 'sel-empty';
+  }
+
   save(): void {
     this.sortByDate();
     const items: PeriodItem[] = this.items.map(e => {
@@ -108,6 +121,7 @@ export class ItemsTableComponent implements OnChanges {
       if (e.date) item.date = e.date;
       if (e.status === 'pagado' || e.status === 'pendiente') item.status = e.status;
       if (e.unit) item.unit = e.unit;
+      if (e.paymentMethod === 'bank' || e.paymentMethod === 'cash') item.paymentMethod = e.paymentMethod;
       if (e.financing?.source === 'savings') {
         item.fundedBySource = 'savings';
       } else if (e.financing?.source === 'extra-fee') {
@@ -139,15 +153,17 @@ export class ItemsTableComponent implements OnChanges {
     if (this.draft.date) item.date = this.draft.date;
     if (this.draft.status === 'pagado' || this.draft.status === 'pendiente') item.status = this.draft.status;
     if (this.draft.unit) item.unit = this.draft.unit;
+    if (this.draft.paymentMethod === 'bank' || this.draft.paymentMethod === 'cash') item.paymentMethod = this.draft.paymentMethod;
     this.items = [...this.items, {
       ...item,
       date: item.date ?? '',
       status: item.status ?? '',
       unit: item.unit ?? '',
+      paymentMethod: item.paymentMethod ?? '',
       financing: this.draft.type === 'egreso' ? this.draft.financing : null,
     }];
     this.save();
-    this.draft = { concept: '', type: this.draft.type, amount: 0, date: '', status: '', unit: '', financing: null };
+    this.draft = { concept: '', type: this.draft.type, amount: 0, date: '', status: '', unit: '', paymentMethod: '', financing: null };
   }
 
   remove(id: string): void {

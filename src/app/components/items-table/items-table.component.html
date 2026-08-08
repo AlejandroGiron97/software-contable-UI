@@ -1,5 +1,12 @@
 <div class="items-table-wrap">
 
+  @if (relocationNotice) {
+    <div class="relocation-notice">
+      {{ relocationNotice }}
+      <button class="btn-dismiss" (click)="relocationNotice = ''" title="Cerrar">✕</button>
+    </div>
+  }
+
   <div class="filters-bar">
     <div class="filter-field">
       <label>Desde</label>

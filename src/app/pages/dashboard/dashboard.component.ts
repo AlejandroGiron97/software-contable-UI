@@ -37,7 +37,11 @@ export class DashboardComponent {
 
   constructor() {
     const ps = this.ledger.periods();
-    if (ps.length) this.selectedKey.set(this.keyOf(ps[0]));
+    if (!ps.length) return;
+    const now = new Date();
+    const currentPeriod = this.ledger.getPeriod(now.getFullYear(), MONTHS[now.getMonth()]);
+    const target = currentPeriod ?? ps[ps.length - 1];
+    this.selectedKey.set(this.keyOf(target));
   }
 
   get currentPeriod(): Period | null {

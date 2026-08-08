@@ -4,6 +4,7 @@ import { NgClass } from '@angular/common';
 import { LedgerService } from '../../services/ledger.service';
 import { PeriodItem, ItemType } from '../../models/period.model';
 import { UNITS } from '../../models/units.const';
+import { MONTHS } from '../../core/utils/period-order.util';
 import { FinancingSelectComponent, FinancingValue } from '../financing-select/financing-select.component';
 
 const SUGGESTED_CONCEPTS = [
@@ -54,6 +55,7 @@ export class ItemsTableComponent implements OnChanges {
 
   readonly suggestedConcepts = SUGGESTED_CONCEPTS;
   readonly units = UNITS;
+  relocationNotice = '';
 
   filters = {
     dateFrom: '',
@@ -130,7 +132,39 @@ export class ItemsTableComponent implements OnChanges {
       }
       return item;
     });
-    this.ledger.updateItems(this.year, this.month, items);
+
+    const belongsHere: PeriodItem[] = [];
+    const misplaced: { item: PeriodItem; year: number; month: string }[] = [];
+    for (const item of items) {
+      const target = this.resolveTargetPeriod(item.date);
+      if (target && (target.year !== this.year || target.month !== this.month)) {
+        misplaced.push({ item, year: target.year, month: target.month });
+      } else {
+        belongsHere.push(item);
+      }
+    }
+
+    this.ledger.updateItems(this.year, this.month, belongsHere);
+
+    if (misplaced.length) {
+      misplaced.forEach(({ item, year, month }) => this.ledger.moveItemToPeriod(item, year, month));
+      this.relocationNotice = misplaced.length === 1
+        ? `Se movió "${misplaced[0].item.concept}" a ${misplaced[0].month} ${misplaced[0].year} porque su fecha no corresponde a este mes.`
+        : `Se movieron ${misplaced.length} movimientos a otros meses porque sus fechas no correspondían a este mes.`;
+      this.ngOnChanges();
+    } else {
+      this.relocationNotice = '';
+    }
+  }
+
+  private resolveTargetPeriod(date?: string): { year: number; month: string } | null {
+    if (!date) return null;
+    const parts = date.split('-');
+    if (parts.length !== 3) return null;
+    const year = +parts[0];
+    const monthIdx = +parts[1] - 1;
+    if (!year || monthIdx < 0 || monthIdx > 11) return null;
+    return { year, month: MONTHS[monthIdx] };
   }
 
   private sortByDate(): void {

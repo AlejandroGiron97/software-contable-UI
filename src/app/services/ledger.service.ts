@@ -90,6 +90,12 @@ export class LedgerService {
     );
   }
 
+  moveItemToPeriod(item: PeriodItem, year: number, month: string): void {
+    if (!this.getPeriod(year, month)) this.addMonth(year, month);
+    const target = this.getPeriod(year, month)!;
+    this.updateItems(year, month, [...target.items, item]);
+  }
+
   getPeriod(year: number, month: string): Period | undefined {
     return this.periods().find(p => p.year === year && p.month === month);
   }
